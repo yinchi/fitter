@@ -37,7 +37,7 @@ from tqdm import tqdm
 
 __all__ = ["get_common_distributions", "get_distributions", "Fitter"]
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("fitter")
 logger.handlers = []
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.INFO)
