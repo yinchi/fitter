@@ -37,10 +37,11 @@ from tqdm import tqdm
 
 __all__ = ["get_common_distributions", "get_distributions", "Fitter"]
 
+logging_level = logging.INFO
+
 logger = logging.getLogger("fitter")
 logger.handlers = []
 logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
 
 # A solution to wrap joblib parallel call in tqdm from
 # https://stackoverflow.com/questions/24983493/tracking-progress-of-joblib-parallel-execution/58936697#58936697
@@ -300,6 +301,8 @@ class Fitter(object):
 
     @staticmethod
     def _fit_single_distribution(distribution, data, x, y, timeout):
+        logger.setLevel(logging_level)
+
         import warnings
 
         warnings.filterwarnings("ignore", category=RuntimeWarning)
