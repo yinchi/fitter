@@ -19,6 +19,8 @@
 
 """
 import contextlib
+import logging
+import multiprocessing
 import sys
 import threading
 from datetime import datetime
@@ -29,14 +31,16 @@ import pandas as pd
 import pylab
 import scipy.stats
 from joblib.parallel import Parallel, delayed
-from loguru import logger
 from scipy.stats import entropy as kl_div
 from scipy.stats import kstest
 from tqdm import tqdm
-import multiprocessing
 
 __all__ = ["get_common_distributions", "get_distributions", "Fitter"]
 
+logger = logging.getLogger(__name__)
+logger.handlers = []
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.INFO)
 
 # A solution to wrap joblib parallel call in tqdm from
 # https://stackoverflow.com/questions/24983493/tracking-progress-of-joblib-parallel-execution/58936697#58936697
@@ -355,7 +359,8 @@ class Fitter(object):
         N = len(self.distributions)
         with tqdm_joblib(desc=f"Fitting {N} distributions", total=N, disable=not progress) as progress_bar:
             results = Parallel(n_jobs=max_workers, prefer=prefer)(
-                delayed(Fitter._fit_single_distribution)(dist, self._data, self.x, self.y, self.timeout) for dist in self.distributions
+                delayed(Fitter._fit_single_distribution)(dist, self._data, self.x, self.y, self.timeout)
+                for dist in self.distributions
             )
 
         for distribution, values in results:
