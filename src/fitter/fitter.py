@@ -334,7 +334,7 @@ class Fitter(object):
             dist_fitted = dist(*param)
             ks_stat, ks_pval = kstest(data, dist_fitted.cdf)
 
-            logger.info("Fitted {} distribution with error={})".format(distribution, round(sq_error, 6)))
+            logger.info("Fitted {} distribution with error={}".format(distribution, round(sq_error, 6)))
 
             return distribution, (param, pdf_fitted, sq_error, aic, bic, kullback_leibler, ks_stat, ks_pval)
         except Exception:  # pragma: no cover
