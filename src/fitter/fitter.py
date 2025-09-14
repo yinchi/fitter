@@ -35,13 +35,30 @@ from scipy.stats import entropy as kl_div
 from scipy.stats import kstest
 from tqdm import tqdm
 
-__all__ = ["get_common_distributions", "get_distributions", "Fitter"]
-
-logging_level = logging.INFO
+__all__ = ["get_common_distributions", "get_distributions", "Fitter", "set_log_level"]
 
 logger = logging.getLogger("fitter")
-logger.handlers = []
-logger.addHandler(logging.StreamHandler())
+logging_level = logging.INFO
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+logger.addHandler(handler)
+logger.propagate = False  # Prevent double logging
+
+
+def set_log_level(level):
+    """Setup the logger for the fitter module.
+
+    :param int level: logging level as defined in the logging module
+        (e.g. logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL)
+
+    """
+    global logger
+    global logging_level
+    logging_level = level
+    logger.setLevel(logging_level)
+
+
+set_log_level(logging_level)
 
 # A solution to wrap joblib parallel call in tqdm from
 # https://stackoverflow.com/questions/24983493/tracking-progress-of-joblib-parallel-execution/58936697#58936697
@@ -300,8 +317,8 @@ class Fitter(object):
         pylab.grid(True)
 
     @staticmethod
-    def _fit_single_distribution(distribution, data, x, y, timeout):
-        logger.setLevel(logging_level)
+    def _fit_single_distribution(distribution, data, x, y, timeout, _logging_level):
+        logger.setLevel(_logging_level)
 
         import warnings
 
@@ -362,7 +379,7 @@ class Fitter(object):
         N = len(self.distributions)
         with tqdm_joblib(desc=f"Fitting {N} distributions", total=N, disable=not progress) as progress_bar:
             results = Parallel(n_jobs=max_workers, prefer=prefer)(
-                delayed(Fitter._fit_single_distribution)(dist, self._data, self.x, self.y, self.timeout)
+                delayed(Fitter._fit_single_distribution)(dist, self._data, self.x, self.y, self.timeout, logging_level)
                 for dist in self.distributions
             )
 
